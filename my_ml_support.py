@@ -21,7 +21,7 @@ import copy
 pyplot.ioff()
     
 
-class Tools():
+class Tool():
     """
     This contains tools for for preprocessing of data and for machine learning.
     
@@ -521,7 +521,7 @@ class Tools():
             
             >> classPrefix: a string representing the prefix for the classes. 
             Suffices (integers as strings, starting from 1) are automatically appended. 
-            Default is None, which results in dummy encoding.
+            Default is None, which results in ordinal encoding.
             
         OPs and RETURN:
             
@@ -732,28 +732,28 @@ class Tools():
         df=df.copy()
         
         # identify all the binary categorical columns (col with 2 or less unique values).
-        colNames_dummy_encode=[]
+        colNames_ordinal_encode=[]
         locs=[]
         for i,colName in enumerate(colNames):
             cats=df.loc[:,colName].unique()
             if len(cats)<=2:
-                colNames_dummy_encode.append(colName)
+                colNames_ordinal_encode.append(colName)
                 locs.append(i)   
         
-        # apply dummy encoding to binary categorical columns.
+        # apply ordinal encoding to binary categorical columns.
         # Same result as onehote encoding, without generatin new columns.
-        if len(colNames_dummy_encode)>0:
+        if len(colNames_ordinal_encode)>0:
             
             colNames=np.delete(colNames,locs) # remove the already encoded binary categorical columns.
             
             encoder=preprocessing.OrdinalEncoder(dtype=np.int32)
             
             # convert to np array and ensure its 2D.
-            temp=df.loc[:,colNames_dummy_encode].to_numpy().reshape(-1,len(colNames_dummy_encode))
-            df.loc[:,colNames_dummy_encode]=encoder.fit_transform(temp)
+            temp=df.loc[:,colNames_ordinal_encode].to_numpy().reshape(-1,len(colNames_ordinal_encode))
+            df.loc[:,colNames_ordinal_encode]=encoder.fit_transform(temp)
         
             # ensure dtypes of the encoded columns are int.
-            for c in colNames_dummy_encode:
+            for c in colNames_ordinal_encode:
                 # for some reason, doing it all at once for all columns doesn't do anything.
                 df.loc[:,c]=df.loc[:,c].astype("int32") 
         
@@ -769,7 +769,7 @@ class Tools():
         df=df.join(pd.DataFrame(encodedArr, columns=newColNames, index=df.index))
         
         # omit the old columns.
-        colNames_to_retain=list(colNames_dummy_encode)+list(newColNames)
+        colNames_to_retain=list(colNames_ordinal_encode)+list(newColNames)
         df=df.loc[:,colNames_to_retain]
         
         return df
